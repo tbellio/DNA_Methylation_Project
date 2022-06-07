@@ -14,6 +14,7 @@ library(tximeta)
 library(apeglm)
 library(GO.db)
 library(org.Mm.eg.db)
+library(ggplot2)
 
 setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192")
 sample_metadata <- read_excel("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Batch_of_192_metadata.xlsx")  #reads in excel file with data about each sample
@@ -90,7 +91,8 @@ gene_expression_from_dge_dds_cortex_gene_se_10filtered
 ## Sort the gene expression data by FDR(adjusted p-value)
 gene_expression_padj_ordered_from_dge_dds_cortex_gene_se_10filtered <- gene_expression_from_dge_dds_cortex_gene_se_10filtered[order(gene_expression_from_dge_dds_cortex_gene_se_10filtered$padj),]
 gene_expression_padj_ordered_from_dge_dds_cortex_gene_se_10filtered
-
+gene_expression_logfc_ordered_from_dge_dds_cortex_gene_se_10filtered <- gene_expression_from_dge_dds_cortex_gene_se_10filtered[order(gene_expression_from_dge_dds_cortex_gene_se_10filtered$log2FoldChange),]
+gene_expression_logfc_ordered_from_dge_dds_cortex_gene_se_10filtered
 ##export DGE Analysis to csv File
 setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/Bioinformatic_Analysis_Git/DNA_Methylation_Project/Cortex-R-Analysis")
 write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_cortex_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_APP_v_WT_DGE_Analysis_padj_sorted_6_7_2022.csv")
@@ -129,3 +131,38 @@ plotMA(LFC_dge_dds_cortex_gene_se_10filtered, ylim=c(-2,2))
 par(mfrow=c(1,2))
 plotMA(dge_dds_cortex_gene_se_10filtered, ylim=c(-2,2))
 plotMA(LFC_dge_dds_cortex_gene_se_10filtered, ylim=c(-2,2))
+
+## Trying to create heatmap of top 100 DE genes in samples
+## using https://genviz.org/module-04-expression/0004/02/01/DifferentialExpression/ as a guide
+
+## Transform count data using the variance stabilizing transform
+vst_dds_cortex_gene_se_10filtered <- vst(dds_cortex_gene_se_10filtered)
+
+## Convert the DESeq transformed object to a data frame
+vst_dds_cortex_gene_se_10filtered <- assay(vst_dds_cortex_gene_se_10filtered)
+vst_dds_cortex_gene_se_10filtered <- as.data.frame(vst_dds_cortex_gene_se_10filtered)
+vst_dds_cortex_gene_se_10filtered$Gene <- rownames(vst_dds_cortex_gene_se_10filtered)
+head(vst_dds_cortex_gene_se_10filtered)
+
+## Filter to the top 100 DEGs
+top100 <- rownames(gene_expression_padj_ordered_from_dge_dds_cortex_gene_se_10filtered[1:100,])
+top100
+
+## FIlter the variance stabilized count data so only the top 100 DEGs are remaining
+top100_vst_dds_cortex_gene_se_10filtered <- vst_dds_cortex_gene_se_10filtered[vst_dds_cortex_gene_se_10filtered$Gene %in% top100,]
+
+
+## Convert the VST counts to long format for ggplot2
+install('reshape2')
+library(reshape2)
+
+## COmpare wide vs long version
+wide_top100_vst_dds_cortex_gene_se_10filtered <- top100_vst_dds_cortex_gene_se_10filtered
+long_tope100_vst_dds_cortex_gene_se_10filtered <- melt(top100_vst_dds_cortex_gene_se_10filtered, id.vars = c("Gene"))
+head(wide_top100_vst_dds_cortex_gene_se_10filtered)
+head(long_tope100_vst_dds_cortex_gene_se_10filtered)
+
+## Make a heatmap 
+heatmap <- ggplot(long_tope100_vst_dds_cortex_gene_se_10filtered, aes(x=variable, y=Gene, fill=value)) +geom_raster() + scale_fill_viridis_b(trans="sqrt")+
+            theme(axis.text.x = element_text(angle = 65, hjust = 1), axis.text.y = element_blank(), axis.ticks.y = element_blank())
+heatmap
