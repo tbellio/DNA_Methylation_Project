@@ -1,8 +1,10 @@
-## Batch of 192-Hippocampus Data 
-## Starting this on 5/25/2022
-## Trying to Use DESeq2 to get DEGs for WT vs APP at all time points (so a comparison of WT vs APP at 3, 6, 9, and 12 months old)
+## Batch of 192- Trimmed Hippocampus Data 
+## This is the data that was run on Salmon 6-6-2022 and 6-7-2022 with the Trimmed reads from Trimmomatic (used 1P and 2P.fastq files for salmon)
+## Starting this on 6/8/2022
 ## Will import data using tximeta to create a summarized experiment First
 ## Using https://www.reneshbedre.com/blog/deseq2.html and https://lashlock.github.io/compbio/R_presentation.html as a guide
+## Trying to Use DESeq2 to get DEGs for WT vs APP at all time points (so a comparison of WT vs APP at 3, 6, 9, and 12 months old)
+
 
 
 
@@ -14,6 +16,7 @@ library(tximeta)
 library(apeglm)
 library(GO.db)
 library(org.Mm.eg.db)
+library(ggplot2)
 
 setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192")
 sample_metadata <- read_excel("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Batch_of_192_metadata.xlsx")  #reads in excel file with data about each sample
@@ -28,7 +31,7 @@ rownames(sample_metadata) <- sample_metadata$Sample   ##turns the row names of s
 sample_metadata$names <- sample_metadata$Sample
 sample_metadata
 
-dir <- setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Hippocampus_aligned_Against_Mouse_cdna_Output_5_2022")
+dir <- setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Hippocampus_Trimmed_FASTQ_Aligned_and_Quant_Salmon_6_6_2022")
 files <- file.path(dir, sample_metadata$names,  "quant.sf" )
 file.exists(files)
 
@@ -37,6 +40,7 @@ hippo_coldata <- data.frame(files, names= sample_metadata$names, APP= sample_met
 hippo_coldata
 
 ## Subset data to only include 3, 6, 9, and 12 month animals
+## Make sure only 24 rows for each
 hippo_three_only_coldata <- hippo_coldata[hippo_coldata$Age== c("3"), ]
 hippo_six_only_coldata <- hippo_coldata[hippo_coldata$Age== c("6"),]
 hippo_nine_only_coldata <- hippo_coldata[hippo_coldata$Age== c("9"),]
@@ -106,7 +110,7 @@ dds_hippo_three_gene_se_10filtered <- dds_hippo_three_gene_se[rowSums(counts(dds
 dds_hippo_six_gene_se_10filtered <- dds_hippo_six_gene_se[rowSums(counts(dds_hippo_six_gene_se)) >= 10,]
 dds_hippo_nine_gene_se_10filtered <- dds_hippo_nine_gene_se[rowSums(counts(dds_hippo_nine_gene_se)) >= 10,]
 dds_hippo_twelve_gene_se_10filtered <- dds_hippo_twelve_gene_se[rowSums(counts(dds_hippo_twelve_gene_se)) >= 10,]
-## this filtered out ~18000 genes; went from 35682 to 18462, 18648, 18976, 18919, respectively
+## this filtered out ~18000 genes; went from 35682 to 18315, 18526, 18811, 18741, respectively
 
 ## Since DESeq uses alphabetical as reference when comparing want to change the reference to the wildtype mice
 dds_hippo_three_gene_se_10filtered$APP <- relevel(dds_hippo_three_gene_se_10filtered$APP, ref = "WT")
@@ -146,66 +150,17 @@ gene_expression_padj_ordered_from_dge_dds_hippo_twelve_gene_se_10filtered <- gen
 
 ## Get a summary of DEGs with FDR (p adj) of <0.05
 summary(results(dge_dds_hippo_three_gene_se_10filtered, alpha = 0.05))
-## Output is that of the 18000-19000 genes, 8 genes were upregulated in APP and 1 was downregulated at 3 months
+## Output is that of the 18315 genes, 10 genes were upregulated in APP and 1 was downregulated at 3 months
 summary(results(dge_dds_hippo_six_gene_se_10filtered, alpha = 0.05))
-##Output is that of the 18621 genes, 408 genes were upregulated and 4 were downregulated in APP mice at 6 months
+##Output is that of the 18526 genes, 441 genes were upregulated and 15 were downregulated in APP mice at 6 months
 summary(results(dge_dds_hippo_nine_gene_se_10filtered, alpha = 0.05))
-##Output is that of the 18951 genes, 2270 genes were upregulated and 1106 were downregulated in APP mice at 9 months
+##Output is that of the 18881 genes, 1951 genes were upregulated and 1386 were downregulated in APP mice at 9 months
 summary(results(dge_dds_hippo_twelve_gene_se_10filtered, alpha = 0.05))
-##Output is that of the 18900 genes, 525 genes were upregulated and 800 were downregulated in APP mice at 12 months
+##Output is that of the 18741 genes, 1022 genes were upregulated and 814 were downregulated in APP mice at 12 months
 
 ##export DGE Analysis to csv File
-setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Hippocampus_Salmon_Mapped_and_Quant_R_Analysis")
-write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_hippo_three_gene_se_10filtered), file = "Batch_of_192_Hippocampus_DESeq2_APP_vs_WT_3mo_DGE_Analysis_padj_sorted_5_25_2022.csv")
-write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_hippo_six_gene_se_10filtered), file = "Batch_of_192_Hippocampus_DESeq2_APP_vs_WT_6mo_DGE_Analysis_padj_sorted_5_25_2022.csv")
-write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_hippo_nine_gene_se_10filtered), file = "Batch_of_192_Hippocampus_DESeq2_APP_vs_WT_9mo_DGE_Analysis_padj_sorted_5_25_2022.csv")
-write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_hippo_twelve_gene_se_10filtered), file = "Batch_of_192_Hippocampus_DESeq2_APP_vs_WT_12mo_DGE_Analysis_padj_sorted_5_25_2022.csv")
-
-## Create Heatmap using clustering via sample distances
-## Using http://bioconductor.org/help/course-materials/2015/CSAMA2015/lab/rnaseqCSAMA.html as guide
-library(pheatmap)
-library(RColorBrewer)
-## Need to take a Summarized Experiment and rlog-transform it
-rld_dds_hippo_three_gene_se_10filtered <- rlog(dds_hippo_three_gene_se_10filtered)
-rld_dds_hippo_six_gene_se_10filtered <- rlog(dds_hippo_six_gene_se_10filtered)
-rld_dds_hippo_nine_gene_se_10filtered <- rlog(dds_hippo_nine_gene_se_10filtered)
-rld_dds_hippo_twelve_gene_se_10filtered <- rlog(dds_hippo_twelve_gene_se_10filtered)
-## Create sample distances-- ie assess overall similarity between 
-distances_rld_dds_hippo_three_gene_se_10filtered <- dist(t(assay(rld_dds_hippo_three_gene_se_10filtered)))
-distances_rld_dds_hippo_three_gene_se_10filtered
-distances_rld_dds_hippo_six_gene_se_10filtered <- dist(t(assay(rld_dds_hippo_six_gene_se_10filtered)))
-distances_rld_dds_hippo_nine_gene_se_10filtered <- dist(t(assay(rld_dds_hippo_nine_gene_se_10filtered)))
-distances_rld_dds_hippo_twelve_gene_se_10filtered <- dist(t(assay(rld_dds_hippo_twelve_gene_se_10filtered)))
-
-## Create Matrix 
-sampleDistMatrix <- as.matrix(distances_rld_dds_hippo_nine_gene_se_10filtered)
-## Make Row Names APP and Diet
-rownames(sampleDistMatrix) <- paste(rld_dds_hippo_nine_gene_se_10filtered$APP, rld_dds_hippo_nine_gene_se_10filtered$Diet, sep="-")
-##Make Colors for Graph
-colors <- colorRampPalette(rev(brewer.pal(9, "Blues")))(255)
-#Create heatmap of distance between samples at 9 months
-pheatmap(sampleDistMatrix,
-         clustering_distance_rows = distances_rld_dds_hippo_nine_gene_se_10filtered,
-         clustering_distance_cols = distances_rld_dds_hippo_nine_gene_se_10filtered,
-         col= colors)
-
-## create heatmap by 50 most varied genes
-library(genefilter)
-topvargenes <- head(order(-rowVars(assay(rld_dds_hippo_nine_gene_se_10filtered))), 50)
-##create matrix of top 50 most varied genes
-mat <- assay(rld_dds_hippo_nine_gene_se_10filtered)[topvargenes,]
-## create data frame with APP and diet info
-df <- as.data.frame(colData(rld_dds_hippo_nine_gene_se_10filtered))
-df <- subset(df, select= c(APP, Diet))
-##Create heatmap using pheatmap
-pheatmap(mat, annotation_col = df)
-
-## Do it for 20 genes
-topvargenes20 <- head(order(-rowVars(assay(rld_dds_hippo_nine_gene_se_10filtered))), 20)
-##create matrix of top 50 most varied genes
-mat20 <- assay(rld_dds_hippo_nine_gene_se_10filtered)[topvargenes20,]
-## create data frame with APP and diet info
-df <- as.data.frame(colData(rld_dds_hippo_nine_gene_se_10filtered))
-df <- subset(df, select= c(APP, Diet))
-##Create heatmap using pheatmap
-pheatmap(mat20, annotation_col = df)
+setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Hippocampus_Salmon_Mapped_and_Quant_R_Analysis/")
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_hippo_three_gene_se_10filtered), file = 'Batch_of_192_Trimmed_Hippocampus_DESeq2_APP_v_WT_3mo_DGE_Analysis_padj_sorted_6_8_2022.csv')
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_hippo_six_gene_se_10filtered), file = "Batch_of_192_Trimmed_Hippocampus_DESeq2_APP_v_WT_6mo_DGE_Analysis_padj_sorted_6_8_2022.csv")
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_hippo_nine_gene_se_10filtered), file = "Batch_of_192_Trimmed_Hippocampus_DESeq2_APP_v_WT_9mo_DGE_Analysis_padj_sorted_6_8_2022.csv")
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_hippo_twelve_gene_se_10filtered), file = "Batch_of_192_Trimmed_Hippocampus_DESeq2_APP_v_WT_12mo_DGE_Analysis_padj_sorted_6_8_2022.csv")

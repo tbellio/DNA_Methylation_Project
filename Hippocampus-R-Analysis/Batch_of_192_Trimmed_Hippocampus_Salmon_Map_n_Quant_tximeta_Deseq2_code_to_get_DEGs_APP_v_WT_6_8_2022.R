@@ -1,5 +1,5 @@
-## Batch of 192-Hippocampus Data
-## This is the data that was run on Salmon 6-6-2022 with the Trimmed reads from Trimmomatic (used 1P and 2P.fastq files for salmon)
+## Batch of 192- Trimmed Hippocampus Data
+## This is the data that was run on Salmon 6-6-2022 and 6-7-2022 with the Trimmed reads from Trimmomatic (used 1P and 2P.fastq files for salmon)
 ## Starting this on 6/8/2022
 ## Trying to Use DESeq2 to get DEGs for WT vs APP
 ## Will import data using tximeta to create a summarized experiment First
