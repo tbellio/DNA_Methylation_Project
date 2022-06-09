@@ -28,6 +28,7 @@ class(sample_metadata$Age)
 rownames(sample_metadata) <- sample_metadata$Sample   ##turns the row names of samples data frame into what is said in the sample column
 sample_metadata$names <- sample_metadata$Sample
 sample_metadata
+sample_metadata$Diet <- as.factor(sample_metadata$Diet)
 
 dir <- setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Cortex_Trimmed_FASTQ_Aligned_and_Quant_Salmon_6_6_2022")
 files <- file.path(dir, sample_metadata$names,  "quant.sf" )
@@ -119,6 +120,26 @@ plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000030789", intgr
 plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000018927", intgroup = "APP")
 plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000000982", intgroup = "APP")
 plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000118672", intgroup = "APP")
+
+
+##use plotCounts to look at some microglia genes
+par(mfrow=c(2,3))
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000036353", intgroup = "APP") ## P2ry12
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000024397", intgroup = "APP") ## Iba1 gene Aif1
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000054675", intgroup = "APP") ## Tmem119 gene
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000030789", intgroup = "APP") ## Itgax
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000002603", intgroup = "APP") ## Tgfb1 
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000052684", intgroup = "APP") ## Jun
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000029304", intgroup = "APP") ## Spp1
+
+par(mfrow=c(2,3))
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000036353", intgroup = "Diet") ## P2ry12
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000024397", intgroup = "Diet") ## Iba1 gene Aif1
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000054675", intgroup = "Diet") ## Tmem119 gene
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000030789", intgroup = "Diet") ## Itgax
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000002603", intgroup = "Diet") ## Tgfb1 (homeostatic microglia marker)
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000052684", intgroup = "Diet") ## Jun ENSMUSG00000029304
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000029304", intgroup = "Diet") ## Spp1
 
 ## visualize log2 fold changes
 par(mfrow=c(1,1))
