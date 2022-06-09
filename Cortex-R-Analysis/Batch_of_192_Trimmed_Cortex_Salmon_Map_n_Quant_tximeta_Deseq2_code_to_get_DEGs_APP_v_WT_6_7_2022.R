@@ -140,6 +140,7 @@ plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000030789", intgr
 plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000002603", intgroup = "Diet") ## Tgfb1 (homeostatic microglia marker)
 plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000052684", intgroup = "Diet") ## Jun ENSMUSG00000029304
 plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000029304", intgroup = "Diet") ## Spp1
+plotCounts(dge_dds_cortex_gene_se_10filtered, gene = "ENSMUSG00000055170", intgroup = "Diet") ## Interferon-gamma
 
 ## visualize log2 fold changes
 par(mfrow=c(1,1))
