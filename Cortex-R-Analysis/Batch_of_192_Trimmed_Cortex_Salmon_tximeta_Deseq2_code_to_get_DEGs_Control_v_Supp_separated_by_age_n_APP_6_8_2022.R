@@ -3,7 +3,8 @@
 ## Starting this on 6/8/2022
 ## Will import data using tximeta to create a summarized experiment First
 ## Using https://www.reneshbedre.com/blog/deseq2.html and https://lashlock.github.io/compbio/R_presentation.html as a guide
-## Trying to Use DESeq2 to get DEGs for Control vs Supp Diet at all time points  (so a comparison of control vs supp at 3, 6, 9, and 12 months old)
+## Trying to Use DESeq2 to get DEGs for Control vs Supp Diet at all time points in separated APP and WT (so a comparison of control vs supp at 3, 6, 9, and 12 months old in separately APP and WT mice)
+## Adding export to excel files 6-10-22
 
 
 
@@ -190,6 +191,17 @@ gene_expression_padj_ordered_from_dge_dds_WT_cortex_twelve_gene_se_10filtered <-
 
 gene_expression_padj_ordered_from_dge_dds_APP_cortex_six_gene_se_10filtered 
 
+## Sort by p-value
+gene_expression_pval_ordered_from_dge_dds_APP_cortex_three_gene_se_10filtered <- gene_expression_from_dge_dds_APP_cortex_three_gene_se_10filtered[order(gene_expression_from_dge_dds_APP_cortex_three_gene_se_10filtered$pvalue),]
+gene_expression_pval_ordered_from_dge_dds_APP_cortex_six_gene_se_10filtered <- gene_expression_from_dge_dds_APP_cortex_six_gene_se_10filtered[order(gene_expression_from_dge_dds_APP_cortex_six_gene_se_10filtered$pvalue),]
+gene_expression_pval_ordered_from_dge_dds_APP_cortex_nine_gene_se_10filtered <- gene_expression_from_dge_dds_APP_cortex_nine_gene_se_10filtered[order(gene_expression_from_dge_dds_APP_cortex_nine_gene_se_10filtered$pvalue),]
+gene_expression_pval_ordered_from_dge_dds_APP_cortex_twelve_gene_se_10filtered <- gene_expression_from_dge_dds_APP_cortex_twelve_gene_se_10filtered[order(gene_expression_from_dge_dds_APP_cortex_twelve_gene_se_10filtered$pvalue),]
+
+gene_expression_pval_ordered_from_dge_dds_WT_cortex_three_gene_se_10filtered <- gene_expression_from_dge_dds_WT_cortex_three_gene_se_10filtered[order(gene_expression_from_dge_dds_WT_cortex_three_gene_se_10filtered$pvalue),]
+gene_expression_pval_ordered_from_dge_dds_WT_cortex_six_gene_se_10filtered <- gene_expression_from_dge_dds_WT_cortex_six_gene_se_10filtered[order(gene_expression_from_dge_dds_WT_cortex_six_gene_se_10filtered$pvalue),]
+gene_expression_pval_ordered_from_dge_dds_WT_cortex_nine_gene_se_10filtered <- gene_expression_from_dge_dds_WT_cortex_nine_gene_se_10filtered[order(gene_expression_from_dge_dds_WT_cortex_nine_gene_se_10filtered$pvalue),]
+gene_expression_pval_ordered_from_dge_dds_WT_cortex_twelve_gene_se_10filtered <- gene_expression_from_dge_dds_WT_cortex_twelve_gene_se_10filtered[order(gene_expression_from_dge_dds_WT_cortex_twelve_gene_se_10filtered$pvalue),]
+
 ## Get a summary of DEGs with FDR (p adj) of <0.05
 summary(results(dge_dds_APP_cortex_three_gene_se_10filtered, alpha = 0.05))
 ## Output is that of the 18837 genes,10 genes were upregulated and 15 were downregulated in supplemented 3 motnh old APP mice
@@ -213,3 +225,27 @@ summary(results(dge_dds_APP_cortex_twelve_gene_se_10filtered, alpha = 0.05))
 ##Output is that of the 18741 genes, 1 genes was upregulated and 1 gene was downregulated in supp APP mice at 12 months
 summary(results(dge_dds_WT_cortex_twelve_gene_se_10filtered, alpha = 0.05))
 ##Output is that of the 18741 genes, 2 genes were upregulated in supp WT mice at 12 months
+
+
+##export DGE Analysis to csv File
+setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Cortex_Salmon_Mapped_and_Quant_R_Analysis")
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_APP_cortex_three_gene_se_10filtered), file = 'Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_3mo_APP_DGE_Analysis_padj_sorted_6_10_2022.csv')
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_APP_cortex_six_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_6mo_APP_DGE_Analysis_padj_sorted_6_10_2022.csv")
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_APP_cortex_nine_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_9mo_APP_DGE_Analysis_padj_sorted_6_10_2022.csv")
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_APP_cortex_twelve_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_12mo_APP_DGE_Analysis_padj_sorted_6_10_2022.csv")
+
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_WT_cortex_three_gene_se_10filtered), file = 'Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_3mo_WT_DGE_Analysis_padj_sorted_6_10_2022.csv')
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_WT_cortex_six_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_6mo_WT_DGE_Analysis_padj_sorted_6_10_2022.csv")
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_WT_cortex_nine_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_9mo_WT_DGE_Analysis_padj_sorted_6_10_2022.csv")
+write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_WT_cortex_twelve_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_12mo_WT_DGE_Analysis_padj_sorted_6_10_2022.csv")
+
+
+write.csv(as.data.frame(gene_expression_pval_ordered_from_dge_dds_APP_cortex_three_gene_se_10filtered), file = 'Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_3mo_APP_DGE_Analysis_pval_sorted_6_10_2022.csv')
+write.csv(as.data.frame(gene_expression_pval_ordered_from_dge_dds_APP_cortex_six_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_6mo_APP_DGE_Analysis_pval_sorted_6_10_2022.csv")
+write.csv(as.data.frame(gene_expression_pval_ordered_from_dge_dds_APP_cortex_nine_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_9mo_APP_DGE_Analysis_pval_sorted_6_10_2022.csv")
+write.csv(as.data.frame(gene_expression_pval_ordered_from_dge_dds_APP_cortex_twelve_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_12mo_APP_DGE_Analysis_pval_sorted_6_10_2022.csv")
+
+write.csv(as.data.frame(gene_expression_pval_ordered_from_dge_dds_WT_cortex_three_gene_se_10filtered), file = 'Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_3mo_WT_DGE_Analysis_pval_sorted_6_10_2022.csv')
+write.csv(as.data.frame(gene_expression_pval_ordered_from_dge_dds_WT_cortex_six_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_6mo_WT_DGE_Analysis_pval_sorted_6_10_2022.csv")
+write.csv(as.data.frame(gene_expression_pval_ordered_from_dge_dds_WT_cortex_nine_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_9mo_WT_DGE_Analysis_pval_sorted_6_10_2022.csv")
+write.csv(as.data.frame(gene_expression_pval_ordered_from_dge_dds_WT_cortex_twelve_gene_se_10filtered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_Control_v_Supp_12mo_WT_DGE_Analysis_pval_sorted_6_10_2022.csv")
