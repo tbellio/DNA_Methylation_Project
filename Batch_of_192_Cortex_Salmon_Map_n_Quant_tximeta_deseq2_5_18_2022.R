@@ -8,6 +8,7 @@ library(tximeta)
 library(apeglm)
 library(GO.db)
 library(org.Mm.eg.db)
+library(AnnotationDbi)
 
 getwd()
 setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192")
@@ -72,6 +73,8 @@ filtered_gene_abundances <- as.data.frame(filtered_dds@assays@data@listData[["ab
 ##want to change the names of the rows from the ENSEMBL gene names to the Symbol
 ##first need to create annotation that matches the rownames of filtered_gene_abundances data frame with the gene symbol
 gene_symbols <- select(org.Mm.eg.db, row.names(filtered_gene_abundances), "SYMBOL", keytype = "ENSEMBL")
+
+
 ##this creates gene_symbols matrix that has 2 columns (ensembl gene name and gene symbol); however there are more genes in this annotation than we have in our filtered_gene_abundances matrix
 length(unique(gene_symbols$ENSEMBL))  #18681 unique emsembl gene names
 length(unique(gene_symbols$SYMBOL))  ##17593 unique gene symbols

@@ -8,7 +8,6 @@
 
 library(BiocManager)
 library(tximport)
-library(tximportData)
 library(readxl)
 library(tximeta)
 library(apeglm)
@@ -50,7 +49,7 @@ assayNames(cortex_se)
 ## Check the row ranges
 rowRanges(cortex_se)
 ## Check the seqinfo
-seqinfo(hippo_se)
+seqinfo(cortex_se)
 
 ## get the database that was used to match the Salmon input quants
 edb <- retrieveDb(cortex_se)
@@ -102,6 +101,25 @@ write.csv(as.data.frame(gene_expression_padj_ordered_from_dge_dds_cortex_gene_se
 ## Get a summary of DEGs with FDR (p adj) of <0.05
 summary(results(dge_dds_cortex_gene_se_10filtered, alpha = 0.05))
 ## Output is that of the 21234 genes, 3337 genes were upregulated in APP and 3471 were downregulated 
+
+all_degs_gene_expression_from_dge_dds_cortex_gene_se_10filtered <- gene_expression_padj_ordered_from_dge_dds_cortex_gene_se_10filtered[1:6808,]
+all_degs_gene_expression_from_dge_dds_cortex_gene_se_10filtered <- as.data.frame(row.names(all_degs_gene_expression_from_dge_dds_cortex_gene_se_10filtered))
+
+
+all_degs_cortex_n_hipppo_APP_v_WT_all_ages <- intersect(all_degs_gene_expression_from_dge_dds_cortex_gene_se_10filtered, all_degs_results_dge_dds_hippo_gene_se_10filtered)
+all_degs_cortex_n_hipppo_APP_v_WT_all_ages
+
+degs_cortex_alone_APP_v_WT_all_ages <- intersect(all_degs_cortex_n_hipppo_APP_v_WT_all_ages, all_degs_gene_expression_from_dge_dds_cortex_gene_se_10filtered)
+degs_cortex_alone_APP_v_WT_all_ages
+
+degs_hippo_alone_APP_v_WT_all_ages <- intersect(all_degs_cortex_n_hipppo_APP_v_WT_all_ages, all_degs_results_dge_dds_hippo_gene_se_10filtered)
+degs_hippo_alone_APP_v_WT_all_ages
+
+compare_df(all_degs_gene_expression_from_dge_dds_cortex_gene_se_10filtered, all_degs_results_dge_dds_hippo_gene_se_10filtered)
+
+summary(compare_df(all_degs_gene_expression_from_dge_dds_cortex_gene_se_10filtered, all_degs_results_dge_dds_hippo_gene_se_10filtered))
+
+comparedf(all_degs_gene_expression_from_dge_dds_cortex_gene_se_10filtered, all_degs_results_dge_dds_hippo_gene_se_10filtered)
 
 ## Get normalized counts; DESeq2 uses median of ratios method
 ## Takes into account sequencing depth and RNA composition but not gene length (ok if just comparing between samples, not within)

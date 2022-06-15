@@ -8,7 +8,6 @@
 
 library(BiocManager)
 library(tximport)
-library(tximportData)
 library(readxl)
 library(tximeta)
 library(apeglm)
@@ -104,6 +103,11 @@ results_dge_dds_hippo_gene_se_10filtered <- results(dge_dds_hippo_gene_se_10filt
 results_dge_dds_hippo_gene_se_10filtered <- results_dge_dds_hippo_gene_se_10filtered[order(results_dge_dds_hippo_gene_se_10filtered$padj),]
 head(results_dge_dds_hippo_gene_se_10filtered)
 ## Output is that of the 20480 genes, 2015 genes were upregulated in APP and 2064 were downregulated 
+
+all_degs_results_dge_dds_hippo_gene_se_10filtered <- results_dge_dds_hippo_gene_se_10filtered[1:4079,]
+all_degs_results_dge_dds_hippo_gene_se_10filtered <- as.data.frame(row.names(all_degs_results_dge_dds_hippo_gene_se_10filtered))
+
+
 
 ## Get normalized counts; DESeq2 uses median of ratios method
 ## Takes into account sequencing depth and RNA composition but not gene length (ok if just comparing between samples, not within)
