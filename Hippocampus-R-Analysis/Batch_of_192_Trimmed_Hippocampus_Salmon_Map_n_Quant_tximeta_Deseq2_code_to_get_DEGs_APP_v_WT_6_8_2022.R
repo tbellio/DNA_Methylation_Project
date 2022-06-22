@@ -1,6 +1,8 @@
 ## Batch of 192- Trimmed Hippocampus Data
 ## This is the data that was run on Salmon 6-6-2022 and 6-7-2022 with the Trimmed reads from Trimmomatic (used 1P and 2P.fastq files for salmon)
 ## Starting this on 6/8/2022
+## Updated 6/13/2022
+## Updated 6/15/2022
 ## Trying to Use DESeq2 to get DEGs for WT vs APP
 ## Will import data using tximeta to create a summarized experiment First
 ## Using https://www.reneshbedre.com/blog/deseq2.html and https://lashlock.github.io/compbio/R_presentation.html as a guide
@@ -165,7 +167,7 @@ library(reshape2)
 
 ## COmpare wide vs long version
 wide_top100_vst_dds_hippo_gene_se_10filtered <- top100_vst_dds_hippo_gene_se_10filtered
-long_top100_vst_dds_hippo_gene_se_10filtered <- melt(top100_vst_dds_hippo_gene_se_10filtered, id.vars = c("Gene"))
+long_top100_vst_dds_hippo_gene_se_10filtered <- melt(top100_vst_dds_hippo_gene_se_10filtered, id.vars = c("Gene"))  ##on the manual this is 'deseq2VST'
 head(wide_top100_vst_dds_hippo_gene_se_10filtered)
 head(long_top100_vst_dds_hippo_gene_se_10filtered)
 
@@ -175,3 +177,93 @@ heatmap_long <- ggplot(long_top100_vst_dds_hippo_gene_se_10filtered, aes(x=varia
 heatmap_long
 
 
+## Clustering and heatmap
+
+## Convert the top 100 DEGs back to a matrix for clustering
+deseq2VSTMatrix <- dcast(long_top100_vst_dds_hippo_gene_se_10filtered, Gene ~ variable)
+rownames(deseq2VSTMatrix) <- deseq2VSTMatrix$Gene
+deseq2VSTMatrix$Gene <- NULL
+deseq2VSTMatrix
+
+## Compute a distance calculation on both dimensions of the matrix
+distanceGene <- dist(deseq2VSTMatrix)
+distanceSample <- dist(t(deseq2VSTMatrix))
+
+## Cluster based on the distance calculations
+clusterGene <- hclust(distanceGene, method= 'average')
+clusterSample <- hclust(distanceSample, method='average')
+
+## Construct a dendrogram for samples
+install.packages('ggdendro')
+library(ggdendro)
+sampleModel <- as.dendrogram(clusterSample)
+sampleDendrogramData <- segment(dendro_data(sampleModel, type= 'rectangle'))
+sampleDendrogram <- ggplot(sampleDendrogramData) + geom_segment(aes(x = x, y=y, xend=xend, yend=yend)) + theme_dendro()
+
+## Re-factor samples for ggplot2
+long_top100_vst_dds_hippo_gene_se_10filtered$variable <- factor(long_top100_vst_dds_hippo_gene_se_10filtered$variable, levels = clusterSample$labels[clusterSample$order])
+
+## Construct the heatmap. Note that at this point we have only clustered the samples NOT the genes
+heatmap <- ggplot(long_top100_vst_dds_hippo_gene_se_10filtered, aes(x=variable, y=Gene, fill=value)) + geom_raster() + scale_fill_viridis_b(trans= 'sqrt') +
+                  theme(axis.text.x = element_text(angle = 65, hjust = 1), axis.text.y = element_blank(), axis.ticks.y = element_blank())
+heatmap
+
+
+## Combine the dendrogram and the heatmap
+install.packages('gridExtra')
+library(gridExtra)
+grid.arrange(sampleDendrogram, heatmap, ncol=1, heights=c(1,5))  ## this leads to the clustering being off center
+## this is becuase the plot widths from the two plots dont match
+## so lets fix this
+
+library(gtable)
+library(grid)
+
+## Change the ggplot objects
+sampleDendrogram_1 <- sampleDendrogram + scale_x_continuous(expand = c(0.0085, 0.0085)) + scale_y_continuous(expand = c(0,0))
+heatmap_1 <- heatmap + scale_x_discrete(expand = c(0,0)) + scale_y_discrete(expand = c(0,0))
+
+
+## Convert both grid based onjects to grobs
+sampleDendrogramGrob <- ggplotGrob(sampleDendrogram_1)
+heatmapGrob <- ggplotGrob(heatmap_1)
+
+## Check the widths of each Grob
+sampleDendrogramGrob$widths
+heatmapGrob$widths
+
+## Add the missing columns
+sampleDendrogramGrob <- gtable_add_cols(sampleDendrogramGrob, heatmapGrob$widths[7], 6)
+sampleDendrogramGrob <- gtable_add_cols(sampleDendrogramGrob, heatmapGrob$widths[8], 7)
+
+## Make sure all the widths between the two Grobs are the same
+maxWidth <- unit.pmax(sampleDendrogramGrob$widths, heatmapGrob$widths)
+sampleDendrogramGrob$widths <- as.list(maxWidth)
+heatmapGrob$widths <- as.list(maxWidth)
+
+## Arrange the Grobs into a plot
+finalGrob <- arrangeGrob(sampleDendrogramGrob, heatmapGrob, ncol = 1, heights = c(2,5))
+
+## Make the plot
+grid.draw(finalGrob)
+
+
+## Reorder the sample data to match the clustering
+sample_metadata$names <- factor(sample_metadata$names, levels = clusterSample$labels[clusterSample$order]) ##sample_metadata is equivalent to sampleData_v2 in the tutorial
+
+## Construct a plot to show APP Genotype
+colors <- c('#743B8B', '#8B743B')
+sampleAPP <- ggplot(sample_metadata, aes(x= names, y= 1, fill= APP)) + geom_tile() + scale_x_discrete(expand=c(0,0)) + scale_y_discrete(expand=c(0,0)) + scale_fill_manual(name="APP Genotype", values = colors) + theme_void()
+
+## Convert the APP plot to a Grob
+sampleAPPGrob <- ggplotGrob(sampleAPP)
+
+## Make sure all widths between all Grobs are the same
+maxWidth <- unit.pmax(sampleDendrogramGrob$widths, heatmapGrob$widths, sampleAPPGrob$widths)
+sampleDendrogramGrob$widths <- as.list(maxWidth)
+heatmapGrob$widths <- as.list(maxWidth)
+sampleAPPGrob$widths <- as.list(maxWidth)
+
+## Arrange and make the plot
+finalGrob <- arrangeGrob(sampleDendrogramGrob, sampleAPPGrob, heatmapGrob, ncol = 1, heights = c(2,1,8))
+grid.draw(finalGrob)
