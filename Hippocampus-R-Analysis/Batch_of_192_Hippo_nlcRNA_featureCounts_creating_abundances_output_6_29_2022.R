@@ -23,6 +23,8 @@ justgeneids <- gsub("\\..*", "", geneids)
 
 justgeneids <- as.data.frame(justgeneids)
 
+colnames(justgeneids) <- "GeneIDNew"
+
 write_delim(justgeneids, "Mouse_nlcRNA_list.txt", delim = " ")
 
 write.table(justgeneids, "Mouse_nlcRNAs_list.txt", append=F, sep= " ", row.names = F, col.names = F)
@@ -30,6 +32,7 @@ write.table(justgeneids, "Mouse_nlcRNAs_list.txt", append=F, sep= " ", row.names
 colnames(Hippo_nlcRNAs)
 
 Hippo_nlcRNAs$GeneIDNew <- justgeneids
+Hippo_nlcRNAs$GeneIDNew <- as.character(Hippo_nlcRNAs$GeneIDNew)
 
 ## Need to have nlcRNA ensembl data as vector for next line in code
 nlcRNAgeneids <- as.vector(Hippo_nlcRNAs$GeneIDNew)
