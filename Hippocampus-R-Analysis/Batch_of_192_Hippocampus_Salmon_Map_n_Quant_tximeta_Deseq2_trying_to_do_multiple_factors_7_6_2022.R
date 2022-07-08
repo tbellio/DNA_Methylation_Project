@@ -66,7 +66,7 @@ rowRanges(hippo_gene_se)
 
 ## Now use DESeq2 to look for DEGs
 library('DESeq2')
-dds_hippo_gene_se <- DESeqDataSet(hippo_gene_se, design = ~ Age + Diet + Sex + APP)
+dds_hippo_gene_se <- DESeqDataSet(hippo_gene_se, design = ~ Age + Diet + Sex + APP) ## this will create a DESEqDataSet with the design saying look for the effects of APP while controlling for age, diet, sex
 ## Check to make sure that APP in the dds_hippo_gene_se DESeqDataSet is a factor; it will automatically convert if not
 
 ## Filter so that only genes that have more than 10 reads total are inculuded
@@ -90,9 +90,9 @@ APP_results
 
 ## see how many genes reach threshold
 summary(results(dge_dds_hippo_gene_se_10filtered, alpha= 0.05))
-## 2043 genes are upregulated and 2215 genes are downegulated in APP mice compared to WT 
-
-
+## 2043 genes are upregulated and 2215 genes are downegulated in APP mice compared to WT with padj < 0.05
+summary(APP_results)
+## 2651 genes are upregulated and 2869 genes are downregulated in APP mice compared to WT with padj < 0.1; this is controlling for age, sex, diet
 
 ## Sort the gene expression data by FDR(adjusted p-value)
 APP_results_padj_ordered <- APP_results[order(APP_results$padj),]
@@ -103,6 +103,9 @@ APP_results_pval_ordered
 
 APP_results_log2fc_ordered <- APP_results[order(APP_results$log2FoldChange),]
 APP_results_log2fc_ordered
+
+
+
 
 
 ## Now trying to add different levels
@@ -119,11 +122,12 @@ results_diet_padj_sorted <- results_diet[order(results_diet$padj),]
 
 setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Hippocampus_Salmon_Mapped_and_Quant_R_Analysis")
 write.csv(as.data.frame(results_diet_padj_sorted), file = "Batch_of_192_Trimmed_Hippo_DESeq2_Control_v_Supp_DGE_Analysis_adjust_factors_padj_sorted_7_6_2022.csv")
+## Lines 111-124 I don't think are actually properly done
+
+##Will adjust code so that Diet is the effect I am telling DESeq2 to be interested in
 
 
-
-
-
+## Create DESeqDataSet with looking at effect of Diet while controlling for age, sex, and APP genotype
 dds_diet_hippo_gene_se <- DESeqDataSet(hippo_gene_se, design = ~ Age + APP + Sex + Diet)
 ## Filter so that only genes that have more than 10 reads total are inculuded
 dds_diet_hippo_gene_se_10filtered <- dds_diet_hippo_gene_se[rowSums(counts(dds_diet_hippo_gene_se)) >= 10,]
@@ -146,9 +150,8 @@ diet_results
 
 ## see how many genes reach threshold
 summary(diet_results)
-
+## 7 genes were upregulated and 11 genes were downregulated in supplemented mice, compared to control mice controlling for age, sex, APP genotype
 head(diet_results)
-summary(diet_results)
 
 diet_results_padj_sorted <- diet_results[order(diet_results$padj),]
 diet_results_padj_sorted
@@ -159,7 +162,8 @@ write.csv(as.data.frame(diet_results_padj_sorted), file = "Batch_of_192_Trimmed_
 
 
 ## Now looking under "Interactions" Section from http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#interactions
-dds_hippo_gene_se <- DESeqDataSet(hippo_gene_se, design = ~APP)
+## They say best way to deal with interactions is to create a "group" factor that collapses all groups on top of each other so can do pairwise comparisons between your groups
+dds_hippo_gene_se <- DESeqDataSet(hippo_gene_se, design = ~ Age + Sex + Diet + APP)
 dds_hippo_gene_se$group <- factor(paste0(dds_hippo_gene_se$APP, dds_hippo_gene_se$Age, dds_hippo_gene_se$Diet, dds_hippo_gene_se$Sex))
 design(dds_hippo_gene_se) <- ~ group
 dds_hippo_gene_se_interactions <- DESeq(dds_hippo_gene_se)
