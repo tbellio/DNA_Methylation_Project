@@ -104,7 +104,8 @@ APP_results_pval_ordered
 APP_results_log2fc_ordered <- APP_results[order(APP_results$log2FoldChange),]
 APP_results_log2fc_ordered
 
-
+setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Hippocampus_Salmon_Mapped_and_Quant_R_Analysis")
+write.csv(as.data.frame(APP_results_padj_ordered), file = "Batch_of_192_Trimmed_Hippo_DESeq2_APP_v_WT_DGE_Analysis_adjust_factors_padj_sorted_7_6_2022.csv")
 
 
 
