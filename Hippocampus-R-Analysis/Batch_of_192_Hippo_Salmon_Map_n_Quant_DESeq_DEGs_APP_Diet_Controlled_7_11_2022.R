@@ -212,8 +212,110 @@ write.csv(as.data.frame(APP_hippo_results_diet_controlled_padj_ordered), file = 
 
 
 
+## Effect of DIET
+
+## Now use DESeq2 to look for DEGs for Control vs Supp while controlling for nothing
+dds_hippo_diet_gene_se <- DESeqDataSet(hippo_gene_se, design = ~Diet) ## this will create a DESEqDataSet with the design saying look for the effects of diet while controlling for nothing
 
 
+## Filter so that only genes that have more than 10 reads total are inculuded
+dds_hippo_diet_gene_se_10filtered <- dds_hippo_diet_gene_se[rowSums(counts(dds_hippo_diet_gene_se)) >= 10,]
+## this filtered out ~15000 genes; went from 35682 to 20480
+
+## Since DESeq uses alphabetical as reference when comparing want to change the reference to the wildtype mice
+dds_hippo_diet_gene_se_10filtered$Diet <- relevel(dds_hippo_diet_gene_se_10filtered$Diet, ref = "Control")
+
+## Run DGE analysis for Control vs Supp; no controlling
+dge_dds_hippo_diet_gene_se_10filtered <- DESeq(dds_hippo_diet_gene_se_10filtered)
+
+## See which comparisons were run; should only be one as model was just control vs supp
+resultsNames(dge_dds_hippo_diet_gene_se_10filtered)
+
+## Look at results and create gene expression table as DESeqResults
+Diet_hippo_results <- results(dge_dds_hippo_diet_gene_se_10filtered)
+## See what the gene expression table says
+## Will tell you what it was comparing (so Control vs Supp for this) and then the log2 fold change, log fold change, stat, pvalue, and adjusted p value (this is Benjamini-Hochberg FDR method)
+Diet_hippo_results
+
+## see how many genes reach threshold
+summary(Diet_hippo_results, alpha= 0.05)
+## 3 genes are upregulated and 14 genes are downegulated in supplemented mice compared to control with padj < 0.05
+summary(Diet_hippo_results)
+## 4 genes are upregulated and 18 genes are downregulated in supplemented mice compared to control with padj < 0.1 
+
+## Sort the gene expression data by FDR(adjusted p-value)
+Diet_hippo_results_padj_ordered <- Diet_hippo_results[order(Diet_hippo_results$padj),]
+Diet_hippo_results_padj_ordered
+
+Diet_hippo_results_pval_ordered <- Diet_hippo_results[order(Diet_hippo_results$pvalue),]
+Diet_hippo_results_pval_ordered
+
+Diet_hippo_results_log2fc_ordered <- Diet_hippo_results[order(Diet_hippo_results$log2FoldChange),]
+Diet_hippo_results_log2fc_ordered
+
+setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Hippocampus_Salmon_Mapped_and_Quant_R_Analysis")
+write.csv(as.data.frame(Diet_hippo_results_padj_ordered), file = "Batch_of_192_Trimmed_Hippo_DESeq2_Supp_v_Control_DGE_Analysis_no_control_padj_sorted_7_12_2022.csv")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Now use DESeq2 to look for DEGs for Control vs Supp while controlling for all other variables
+dds_hippo_diet_all_gene_se <- DESeqDataSet(hippo_gene_se, design = ~ Age + Sex + APP + Diet) ## this will create a DESEqDataSet with the design saying look for the effects of diet while controlling for all other variables
+
+
+## Filter so that only genes that have more than 10 reads total are inculuded
+dds_hippo_diet_all_gene_se_10filtered <- dds_hippo_diet_all_gene_se[rowSums(counts(dds_hippo_diet_all_gene_se)) >= 10,]
+## this filtered out ~15000 genes; went from 35682 to 20480
+
+## Since DESeq uses alphabetical as reference when comparing want to change the reference to the wildtype mice
+dds_hippo_diet_all_gene_se_10filtered$Diet <- relevel(dds_hippo_diet_all_gene_se_10filtered$Diet, ref = "Control")
+
+## Run DGE analysis for Control vs Supp; no controlling
+dge_dds_hippo_diet_all_gene_se_10filtered <- DESeq(dds_hippo_diet_all_gene_se_10filtered)
+
+## See which comparisons were run; should only be one as model was just control vs supp
+resultsNames(dge_dds_hippo_diet_all_gene_se_10filtered)
+
+## Look at results and create gene expression table as DESeqResults
+Diet_all_controlled_hippo_results <- results(dge_dds_hippo_diet_all_gene_se_10filtered)
+## See what the gene expression table says
+## Will tell you what it was comparing (so Control vs Supp for this) and then the log2 fold change, log fold change, stat, pvalue, and adjusted p value (this is Benjamini-Hochberg FDR method)
+Diet_all_controlled_hippo_results
+
+## see how many genes reach threshold
+summary(Diet_all_controlled_hippo_results, alpha= 0.05)
+## 2 genes are upregulated and 9 genes are downegulated in supplemented mice compared to control with padj < 0.05
+summary(Diet_all_controlled_hippo_results)
+## 2 genes are upregulated and 11 genes are downregulated in supplemented mice compared to control with padj < 0.1 
+
+## Sort the gene expression data by FDR(adjusted p-value)
+Diet_all_controlled_hippo_results_padj_ordered <- Diet_all_controlled_hippo_results[order(Diet_all_controlled_hippo_results$padj),]
+Diet_all_controlled_hippo_results_padj_ordered
+
+Diet_all_controlled_hippo_results_pval_ordered <- Diet_all_controlled_hippo_results[order(Diet_all_controlled_hippo_results$pvalue),]
+Diet_all_controlled_hippo_results_pval_ordered
+
+Diet_all_controlled_hippo_results_log2fc_ordered <- Diet_all_controlled_hippo_results[order(Diet_all_controlled_hippo_results$log2FoldChange),]
+Diet_all_controlled_hippo_results_log2fc_ordered
+
+setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Hippocampus_Salmon_Mapped_and_Quant_R_Analysis")
+write.csv(as.data.frame(Diet_all_controlled_hippo_results_padj_ordered), file = "Batch_of_192_Trimmed_Hippo_DESeq2_Supp_v_Control_DGE_Analysis_all_controlled_padj_sorted_7_12_2022.csv")
 
 
 
