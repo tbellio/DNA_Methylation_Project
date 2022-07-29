@@ -62,7 +62,7 @@ rowRanges(cortex_gene_se)
 
 ## Now use DESeq2 to look for DEGs
 library('DESeq2')
-dds_cortex_gene_se <- DESeqDataSet(cortex_gene_se, design = ~ APP)
+dds_cortex_gene_se <- DESeqDataSet(cortex_gene_se, design = ~ Age + Sex + Diet + APP)
 ## Check to make sure that APP in the dds_hippo_gene_se DESeqDataSet is a factor; it will automatically convert if not
 
 ## Filter so that only genes that have more than 10 reads total are inculuded
@@ -109,12 +109,14 @@ padj_sorted_results_dge_dds_cortex_gene_se_10filtered
 
 ## Create list of top 100 DEGs
 top100 <- row.names(padj_sorted_results_dge_dds_cortex_gene_se_10filtered[1:100,])
+top50 <-row.names(padj_sorted_results_dge_dds_cortex_gene_se_10filtered[1:50,])
 
 ## now need to subset the filtered_cortex_gene_abundances_matrix so that we only have the top 100 genes remaining
 top100_filtered_cortex_gene_abundances_matrix <- filtered_cortex_gene_abundances_matrix[rownames(filtered_cortex_gene_abundances_matrix) %in% top100, ]
-
+top50_filtered_cortex <- filtered_cortex_gene_abundances_matrix[rownames(filtered_cortex_gene_abundances_matrix) %in% top50,]
 ## make heatmap
 pheatmap(top100_filtered_cortex_gene_abundances_matrix)
+pheatmap(top50_filtered_cortex)
 ## this looks awful because things aren't normalized so lets normalize
 ## make function to z-score
 cal_z_score <- function(x) {
@@ -123,72 +125,37 @@ cal_z_score <- function(x) {
 
 ## apply z-score function to top 100 gene abundances
 top100_filtered_cortex_gene_abundances_matrix_z_score <- t(apply(top100_filtered_cortex_gene_abundances_matrix, 1, cal_z_score))
+top50_filtered_cortex_gene_abundances_matrix_z_score <- t
 
 ## Make heatmap of top 100 DEGs APP vs WT (all ages) in z-score
 pheatmap(top100_filtered_cortex_gene_abundances_matrix_z_score)
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score)
 
 ## Now perform hierarchical clustering to obtain gene cluseters
 my_hclust_gene <- hclust(dist(top100_filtered_cortex_gene_abundances_matrix_z_score), method = "complete")
+my_hclust_gene_50 <- hclust(dist(top50_filtered_cortex_gene_abundances_matrix_z_score), method = "complete")
 
 library(dendextend)
 as.dendrogram(my_hclust_gene) %>%
     plot(horiz= T)
-
+as.dendrogram(my_hclust_gene_50) %>%
+    plot(horiz=T)
 ## Now we can form as many clusters as we want we cutree() function
 ## We'll do two here
 my_gene_col <- cutree(tree = as.dendrogram(my_hclust_gene), k=2 )
 my_gene_col
+my_gene_col_50 <- cutree(tree = as.dendrogram(my_hclust_gene_50), k=2)
 
 my_gene_col <- data.frame(cluster= ifelse(test = my_gene_col ==1, yes = "cluster 1", no= "cluster 2"))
-
+my_gene_col_50 <- data.frame(cluster= ifelse(test = my_gene_col_50 ==1, yes = "cluster 1", no= "cluster 2"))
 head(my_gene_col)
+head(my_gene_col_50)
 
 my_sample_col <- data.frame(APP = sample_metadata$APP, Age= sample_metadata$Age)
 rownames(my_sample_col) <- sample_metadata$Sample
 my_sample_col
 
-pheatmap(top100_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col, annotation_col = my_sample_col)
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col)
 
-
-
-## Create list of top 50 DEGs
-top50 <- row.names(padj_sorted_results_dge_dds_cortex_gene_se_10filtered[1:50,])
-
-## now need to subset the filtered_cortex_gene_abundances_matrix so that we only have the top 100 genes remaining
-top50_filtered_cortex_gene_abundances_matrix <- filtered_cortex_gene_abundances_matrix[rownames(filtered_cortex_gene_abundances_matrix) %in% top50, ]
-
-## make heatmap
-pheatmap(top50_filtered_cortex_gene_abundances_matrix)
-## this looks awful because things aren't normalized so lets normalize
-## make function to z-score
-cal_z_score <- function(x) {
-  (x- mean(x)) / sd(x)
-}
-
-## apply z-score function to top 50 gene abundances
-top50_filtered_cortex_gene_abundances_matrix_z_score <- t(apply(top50_filtered_cortex_gene_abundances_matrix, 1, cal_z_score))
-
-## Make heatmap of top 100 DEGs APP vs WT (all ages) in z-score
-pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score)
-
-## Now perform hierarchical clustering to obtain gene cluseters
-my_hclust_gene <- hclust(dist(top50_filtered_cortex_gene_abundances_matrix_z_score), method = "complete")
-
-library(dendextend)
-as.dendrogram(my_hclust_gene) %>%
-  plot(horiz= T)
-
-## Now we can form as many clusters as we want we cutree() function
-## We'll do two here
-my_gene_col <- cutree(tree = as.dendrogram(my_hclust_gene), k=2 )
-my_gene_col
-
-my_gene_col <- data.frame(cluster= ifelse(test = my_gene_col ==1, yes = "cluster 1", no= "cluster 2"))
-
-head(my_gene_col)
-
-my_sample_col <- data.frame(APP = sample_metadata$APP, Age= sample_metadata$Age)
-rownames(my_sample_col) <- sample_metadata$Sample
-my_sample_col
-
-pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col, annotation_col = my_sample_col)
+par(mfrow=c(1,1))
+plotMA(dge_dds_cortex_gene_se_10filtered, ylim=c(-2,2))
