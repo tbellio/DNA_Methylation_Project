@@ -125,24 +125,24 @@ cal_z_score <- function(x) {
 
 ## apply z-score function to top 100 gene abundances
 top100_filtered_cortex_gene_abundances_matrix_z_score <- t(apply(top100_filtered_cortex_gene_abundances_matrix, 1, cal_z_score))
-top50_filtered_cortex_gene_abundances_matrix_z_score <- t
+top50_filtered_cortex_gene_abundances_matrix_z_score <- t(apply(top50_filtered_cortex,1, cal_z_score))
 
 ## Make heatmap of top 100 DEGs APP vs WT (all ages) in z-score
 pheatmap(top100_filtered_cortex_gene_abundances_matrix_z_score)
 pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score)
 
 ## Now perform hierarchical clustering to obtain gene cluseters
-my_hclust_gene <- hclust(dist(top100_filtered_cortex_gene_abundances_matrix_z_score), method = "complete")
+my_hclust_gene_100 <- hclust(dist(top100_filtered_cortex_gene_abundances_matrix_z_score), method = "complete")
 my_hclust_gene_50 <- hclust(dist(top50_filtered_cortex_gene_abundances_matrix_z_score), method = "complete")
 
 library(dendextend)
-as.dendrogram(my_hclust_gene) %>%
+as.dendrogram(my_hclust_gene_100) %>%
     plot(horiz= T)
 as.dendrogram(my_hclust_gene_50) %>%
     plot(horiz=T)
 ## Now we can form as many clusters as we want we cutree() function
 ## We'll do two here
-my_gene_col <- cutree(tree = as.dendrogram(my_hclust_gene), k=2 )
+my_gene_col <- cutree(tree = as.dendrogram(my_hclust_gene_100), k=2 )
 my_gene_col
 my_gene_col_50 <- cutree(tree = as.dendrogram(my_hclust_gene_50), k=2)
 
@@ -156,6 +156,40 @@ rownames(my_sample_col) <- sample_metadata$Sample
 my_sample_col
 
 pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col)
+
+
+## Trying to add different color scheme to the heatmap starting 10-18-2022
+## usign https://biocorecrg.github.io/CRG_RIntroduction/pheatmap-function-from-the-pheatmap-package.html as a guide
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, cluster_rows = F)  #can do this as will get rid of weird gene clustering on left side of graph
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, cluster_rows = F, cluster_cols = F) ##dont want to do this, you lose the clustering by genes
+
+##change colors to rainbow in heatmpa
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, cluster_rows = F, color = rainbow(50))  ##not a fan
+## change colors to blue to red (middle as white)
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, cluster_rows = F, color = colorRampPalette(c("navy", "white", "red"))(50))  ## this makes it looks red, white, and blue- also not a huge fan
+
+## https://bookdown.org/rdpeng/exdata/plotting-and-color-in-r.html as a guide
+library(RColorBrewer)
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, cluster_rows = F, color = brewer.pal(11, "Spectral"))
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, cluster_rows = F, color = brewer.pal(11, "PiYG"))
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, cluster_rows = F, color = brewer.pal(11, "PRGn")) ## I like this one a lot
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, cluster_rows = F, color = brewer.pal(11, "RdBu"))
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, cluster_rows = F, color = brewer.pal(9, "Blues"))
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, cluster_rows = F, color = brewer.pal(9, "Greens"))
+
+
+## trying to change annotation colors (ie APP, Age)
+## https://bioinformatics.stackexchange.com/questions/18116/changing-the-order-of-colors-in-pheatmap as a guide to change annotation colors
+annot_colors= list(APP=c(APP="#F0978D", WT= "#63D7DE"))
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_row = my_gene_col_50, annotation_col = my_sample_col, annotation_colors=annot_colors,  cluster_rows = F, color = brewer.pal(11, "PRGn")) ## this actually worked so need to play more with it
+
+
+
+## Trying to rotate columns-essentailly for APP (10-18-2022)
+## usign https://slowkow.com/notes/pheatmap-tutorial/ as a guide
+
+
+
 
 par(mfrow=c(1,1))
 plotMA(dge_dds_cortex_gene_se_10filtered, ylim=c(-2,2))

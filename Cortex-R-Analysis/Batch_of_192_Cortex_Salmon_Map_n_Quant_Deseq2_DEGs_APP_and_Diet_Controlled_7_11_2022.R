@@ -15,6 +15,7 @@ library(GO.db)
 library(org.Mm.eg.db)
 library(ggplot2)
 library(DESeq2)
+library(clusterProfiler)
 
 setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192")
 sample_metadata <- read_excel("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Batch_of_192_metadata.xlsx")  #reads in excel file with data about each sample
@@ -290,7 +291,7 @@ dds_cortex_app_all_control_gene_se <- DESeqDataSet(cortex_gene_se, design = ~ Se
 ## Check to make sure that APP in the dds_hippo_gene_se DESeqDataSet is a factor; it will automatically convert if not
 
 ## Filter so that only genes that have more than 10 reads total are inculuded
-dds_cortex_app_all_control_gene_se_10filtered <- dds_cortex_app_all_control_gene_se[rowSums(counts(dds_cortex_gene_se)) >= 10,]
+dds_cortex_app_all_control_gene_se_10filtered <- dds_cortex_app_all_control_gene_se[rowSums(counts(dds_cortex_app_all_control_gene_se)) >= 10,]
 ## this filtered out ~15000 genes; went from 35682 to 21234
 
 ## Since DESeq uses alphabetical as reference when comparing want to change the reference to the wildtype mice
@@ -328,7 +329,16 @@ setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_
 write.csv(as.data.frame(APP_cortex_all_controlled_results_padj_ordered), file = "Batch_of_192_Trimmed_Cortex_DESeq2_APP_v_WT_DGE_Analysis_all_controlled_padj_sorted_7_11_2022.csv")
 
 
-
+## Changing Ensembl Ids to Gene Symbols so easier to Read
+symbols <- bitr(rownames(APP_cortex_all_controlled_results_padj_ordered), fromType = "ENSEMBL", toType = "SYMBOL", OrgDb = org.Mm.eg.db)
+APP_cortex_all_controlled_results_padj_ordered_df <- as.data.frame(APP_cortex_all_controlled_results_padj_ordered)
+APP_cortex_all_controlled_results_padj_ordered_df$ENSEMBL <- rownames(APP_cortex_all_controlled_results_padj_ordered_df)
+APP_cortex_all_controlled_results_padj_ordered_df
+merged_symbols_APP_cortex_all_controlled_results_padj_ordered <- merge(APP_cortex_all_controlled_results_padj_ordered_df, symbols, by.x="ENSEMBL", by.y="ENSEMBL")
+merged_symbols_APP_cortex_all_controlled_results_padj_ordered <- merged_symbols_APP_cortex_all_controlled_results_padj_ordered[order(merged_symbols_APP_cortex_all_controlled_results_padj_ordered$padj),]
+merged_symbols_APP_cortex_all_controlled_results_padj_ordered
+setwd("C:/Users/tbell/Documents/Boston University/DNA_Methylation/RNA_Seq/Batch_of_192/Cortex_Salmon_Mapped_and_Quant_R_Analysis")
+write.csv(merged_symbols_APP_cortex_all_controlled_results_padj_ordered, file = "Batch_of_192_Trimmed_Cortex_DESeq2_APP_v_WT_DGE_Analysis_all_controlled_padj_sorted_with_symbols_8_10_2022.csv")
 
 
 
