@@ -295,17 +295,17 @@ cortex_top50_heatmap_overflow <- pheatmap(top50_filtered_cortex_gene_abundances_
 
 
 ## Now trying to get scale of green same as hippo graph
-palettelength2 <- 50
-myColor_ex2 <- colorRampPalette(c("#762A83", '#E7D4E8', "#F7F7F7", "#D9F0D3", "#A6DBA0", "#5AAE61"))(palettelength2)
-myColor_ex2
+### palettelength2 <- 50
+### myColor_ex2 <- colorRampPalette(c("#762A83", '#E7D4E8', "#F7F7F7", "#D9F0D3", "#A6DBA0", "#5AAE61"))(palettelength2)
+### myColor_ex2
 ## length(breaks) == length(palettelength) +1
 ## use floor and ceiling to deal with even/odd length pallettelenghts
-myBreaks <- c(seq(min(top50_filtered_cortex_gene_abundances_matrix_z_score), 0, length.out=ceiling(palettelength2/2)+1),
-              seq(max(top50_filtered_cortex_gene_abundances_matrix_z_score)/palettelength2, max(top50_filtered_cortex_gene_abundances_matrix_z_score), length.out=floor(palettelength2/2)))
+### myBreaks <- c(seq(min(top50_filtered_cortex_gene_abundances_matrix_z_score), 0, length.out=ceiling(palettelength2/2)+1),
+              ### seq(max(top50_filtered_cortex_gene_abundances_matrix_z_score)/palettelength2, max(top50_filtered_cortex_gene_abundances_matrix_z_score), length.out=floor(palettelength2/2)))
 
-cortex_top50_heatmap_overflow <- pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors = annot_colors_gradient, cluster_cols = as.hclust(col_dend), cluster_rows = F,
-                                          color = myColor_ex2, border_color = "gray60", breaks = myBreaks,
-                                          main = "Cortex Hierarchal Clustering of Top 50 DEGs",
-                                          fontsize = 18,
-                                          fontsize_row =  13,
-                                          fontsize_col= 11)
+### cortex_top50_heatmap_overflow <- pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors = annot_colors_gradient, cluster_cols = as.hclust(col_dend), cluster_rows = F,
+                                          ### color = myColor_ex2, border_color = "gray60", breaks = myBreaks,
+                                          ### main = "Cortex Hierarchal Clustering of Top 50 DEGs",
+                                          ### fontsize = 18,
+                                          ### fontsize_row =  13,
+                                          ### fontsize_col= 11)
