@@ -4,6 +4,7 @@
 ## Will import data using tximeta to create a summarized experiment First
 ## Using  https://davetang.org/muse/2018/05/15/making-a-heatmap-in-r-with-the-pheatmap-package/ as a guide
 ## Trying to visualize DEGs
+## Have very nice Top 50 heatmap that is ready for poster as of 10-24-2022
 
 
 
@@ -153,6 +154,7 @@ row.names(top50_gene_symbols) <- top50_gene_symbols$SYMBOL
 top50_gene_symbols
 top100 <- row.names(top100_gene_symbols)
 top50 <- row.names(top50_gene_symbols)
+top50
 
 ## now need to subset the filtered_cortex_gene_abundances_matrix so that we only have the top 100 genes remaining
 top100_filtered_cortex_gene_abundances_matrix <- filtered_cortex_gene_abundances_matrix[rownames(filtered_cortex_gene_abundances_matrix) %in% top100, ]
@@ -246,7 +248,7 @@ pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = 
 ## This is combination I like and think I will use for poster
 annot_colors_gradient= list(APP=c(APP="red1", WT= "royalblue1"), Diet= c(Control= "chartreuse2", Supplemented= "springgreen4"), Age= c('3'='gray99', '6'='gray75', '9'= 'gray50', '12'= 'gray25'))
 my_sample_col$APP <- factor(my_sample_col$APP, levels = c('WT', 'APP'))
-pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors=annot_colors_gradient,  cluster_rows = F, color = brewer.pal(11, "PRGn"), border_color = "gray50")
+pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors=annot_colors_gradient,  cluster_rows = F, color = brewer.pal(11, "PRGn"), border_color = "gray60")
 
 
 ## Trying to rotate the branch so that all APP on inside
@@ -254,25 +256,56 @@ my_hclust_sample_top50 <- hclust(dist(t(top50_filtered_cortex_gene_abundances_ma
 as.dendrogram(my_hclust_sample_top50) %>%
   plot()
 ## so this creates the dendrogram but now i just want the flip the first branch of this!! How do I do it???
-annot_colors_gradient= list(APP=c(APP="red1", WT= "royalblue1"), Diet= c(Control= "chartreuse2", Supplemented= "springgreen4"), Age= c('3'='gray99', '6'='gray75', '9'= 'gray50', '12'= 'gray25'))
-top50_heatmap <- pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors=annot_colors_gradient,  cluster_rows = F, color = brewer.pal(11, "PRGn"), border_color = "gray50")
+annot_colors_gradient= list(APP=c(APP="red1", WT= "royalblue1"), Diet= c(Control= "gold", Supplemented= "goldenrod3"), Age= c('3'='gray99', '6'='gray75', '9'= 'gray50', '12'= 'gray25'))
+top50_heatmap <- pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors=annot_colors_gradient,  cluster_rows = F, color = brewer.pal(11, "PRGn"), border_color = "gray60")
 col_dend <- top50_heatmap[[2]]
 col_dend
 col_dend <- dendextend::rotate(col_dend, order= c('226', '189','217','287','216','202','190','155','204','27','76','67','31','183','46','211','125','72','79','139','25','24','236','33','124','57',
                                                   '58','268','203','242','185','265','103','213','174','186','149','130','129','106','161','157','152','164','134','141','178','122','74','18','249','20','251','8', '127',
-                                                  '95','61','96','36','9', '259', '225','221','244','117','223','207','282','290','160','192','199','262','89','102','272','238','285','263','153','253','283','107','147','228','277','252',
-                                                  '41','90','132','191','194','40','84','168','275'))
+                                                  '95','61','96','36','9', 
+                                                  '275', '168', '84', '40', '194', '191', '132', '90', '41', '252', '277', 
+                                                  '290', '160', '192', '199', '262', '89', '102', '272', '238', '285', '263', '153', '253', '283', '107', '147', '228',
+                                                  '282', '207', '223', '117', '244', '221', '225', '259' ))
+                                                  
+                                                  
+                          
 pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors=annot_colors_gradient, cluster_cols = as.hclust(col_dend), cluster_rows = F, color = brewer.pal(11, "PRGn"), border_color = "gray50")
 ## You did it!!!!
-top50_heatmap <- pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors=annot_colors_gradient, cluster_cols = as.hclust(col_dend), cluster_rows = F, color = brewer.pal(11, "PRGn"), border_color = "gray50")
+top50_heatmap <- pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors=annot_colors_gradient, cluster_cols = as.hclust(col_dend), cluster_rows = F, color = brewer.pal(11, "PRGn"), border_color = "gray60")
+
+
+## Need to adjust scale of z-scores to show that white is no change, purple is downregulated and greeen is upregulated
+## Using https://stackoverflow.com/questions/31677923/set-0-point-for-pheatmap-in-r as a guide
+
+palettelength2 <- 50
+myColor_ex2 <- colorRampPalette(c("#762A83", "#9970AB", "#C2A5CF", '#E7D4E8', "#F7F7F7", "#D9F0D3", "#A6DBA0", "#5AAE61", "#1B7837", "#00441B"))(palettelength2)
+myColor_ex2
+## length(breaks) == length(palettelength) +1
+## use floor and ceiling to deal with even/odd length pallettelenghts
+myBreaks <- c(seq(min(top50_filtered_cortex_gene_abundances_matrix_z_score), 0, length.out=ceiling(palettelength2/2)+1),
+              seq(max(top50_filtered_cortex_gene_abundances_matrix_z_score)/palettelength2, max(top50_filtered_cortex_gene_abundances_matrix_z_score), length.out=floor(palettelength2/2)))
+
+cortex_top50_heatmap_overflow <- pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors = annot_colors_gradient, cluster_cols = as.hclust(col_dend), cluster_rows = F,
+                                         color = myColor_ex2, border_color = "gray60", breaks = myBreaks,
+                                         main = "Cortex Hierarchical Clustering of Top 50 DEGs",
+                                         fontsize = 24,
+                                         fontsize_row =  10,
+                                         fontsize_col= 10)
 
 
 
-## Trying to rotate columns-essentailly for APP (10-18-2022)
-## usign https://slowkow.com/notes/pheatmap-tutorial/ as a guide
+## Now trying to get scale of green same as hippo graph
+palettelength2 <- 50
+myColor_ex2 <- colorRampPalette(c("#762A83", '#E7D4E8', "#F7F7F7", "#D9F0D3", "#A6DBA0", "#5AAE61"))(palettelength2)
+myColor_ex2
+## length(breaks) == length(palettelength) +1
+## use floor and ceiling to deal with even/odd length pallettelenghts
+myBreaks <- c(seq(min(top50_filtered_cortex_gene_abundances_matrix_z_score), 0, length.out=ceiling(palettelength2/2)+1),
+              seq(max(top50_filtered_cortex_gene_abundances_matrix_z_score)/palettelength2, max(top50_filtered_cortex_gene_abundances_matrix_z_score), length.out=floor(palettelength2/2)))
 
-
-
-
-par(mfrow=c(1,1))
-plotMA(dge_dds_cortex_gene_se_10filtered, ylim=c(-2,2))
+cortex_top50_heatmap_overflow <- pheatmap(top50_filtered_cortex_gene_abundances_matrix_z_score, annotation_col = my_sample_col, annotation_colors = annot_colors_gradient, cluster_cols = as.hclust(col_dend), cluster_rows = F,
+                                          color = myColor_ex2, border_color = "gray60", breaks = myBreaks,
+                                          main = "Cortex Hierarchal Clustering of Top 50 DEGs",
+                                          fontsize = 18,
+                                          fontsize_row =  13,
+                                          fontsize_col= 11)
